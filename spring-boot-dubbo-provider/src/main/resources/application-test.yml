@@ -1,0 +1,37 @@
+spring:
+  application:
+    name: spring-boot-dubbo-provider
+
+  zipkin:
+    base-url: http://10.7.92.76:9411
+    service:
+      name: spring-boot-dubbo-provider
+  sleuth:
+    sampler:
+      probability: 1.0
+    enabled: true
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+dubbo:
+  registry:
+    address: nacos://10.7.92.76:8848
+    group: dev
+    parameters:
+      namespace: zdb
+  provider:
+    filter: tracing
+  consumer:
+    filter: tracing
+  protocol:
+    name: dubbo
+    port: 20881
+  scan:
+    base-packages: com.sans.provider
+server:
+  port: 8080

@@ -1,0 +1,52 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: spring-boot-dubbo-provider
+  main:
+    allow-bean-definition-overriding: true
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/test?useSSL=false&useUnicode=true&characterEncoding=utf-8&autoReconnect=true&serverTimezone=Asia/Shanghai
+    username: root
+    password: root
+  redis:
+    host: localhost
+    port: 6379
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+
+  #  zipkin
+
+  zipkin:
+    base-url: http://10.7.92.37:9411
+    service:
+      name: spring-boot-dubbo-provider
+#    sender:
+#      type: web
+  sleuth:
+    sampler:
+      probability: 1.0
+    enabled: true
+
+#  dubbo
+dubbo:
+  application:
+    name: spring-boot-dubbo-provider
+  registry:
+    address: nacos://10.7.92.36:8848
+    parameters:
+      namespace: db-user
+  provider:
+    filter: tracing
+  consumer:
+    filter: tracing
+  protocol:
+    name: dubbo
+    port: 20881
+
+

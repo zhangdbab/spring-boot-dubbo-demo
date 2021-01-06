@@ -1,0 +1,34 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: spring-boot-dubbo-consumer
+
+  #  zipkin
+  zipkin:
+    base-url: http://10.7.92.37:9411
+    service:
+      name: spring-boot-dubbo-consumer
+  sleuth:
+    sampler:
+      probability: 1.0
+    enabled: true
+
+
+
+
+dubbo:
+  application:
+    name: spring-boot-dubbo-consumer
+  registry:
+    address: nacos://10.7.92.36:8848
+    parameters:
+      namespace: db-user
+  provider:
+      filter: tracing
+  consumer:
+      filter: tracing
+  protocol:
+    name: dubbo
+    port: 20881
