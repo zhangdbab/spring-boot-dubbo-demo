@@ -13,6 +13,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 生产者Dubbo接口实现
@@ -45,7 +46,7 @@ public class UserServiceImpl implements IUserService {
 
         if(null == providerTestDTOList){
             providerTestDTOList = mySqlTest();
-            redisTemplate.opsForValue().set("allUsers",providerTestDTOList);
+            redisTemplate.opsForValue().set("allUsers",providerTestDTOList,5, TimeUnit.SECONDS);
             System.out.println("查询数据库，将数据存入redis缓存");
         }else{
             System.out.println("查询Redis缓存");
