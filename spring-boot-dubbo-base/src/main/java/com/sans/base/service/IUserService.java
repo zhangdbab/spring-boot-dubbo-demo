@@ -1,9 +1,12 @@
 package com.sans.base.service;
 
-import com.sans.base.dto.ProviderTestDTO;
+
+import com.sans.base.dto.User;
+
 import java.util.List;
 
-
 public interface IUserService {
-    List<ProviderTestDTO> queryList();
+    List<User> queryList();
+    User queryByID(String id);
+    void  savaUserInfoToMongo(User user);
 }

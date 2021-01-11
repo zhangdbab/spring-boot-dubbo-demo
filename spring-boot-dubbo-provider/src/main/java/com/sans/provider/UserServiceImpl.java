@@ -1,9 +1,10 @@
 package com.sans.provider;
 
-import com.sans.base.dto.ProviderTestDTO;
+import com.sans.base.dto.User;
 import com.sans.base.service.IUserService;
+import com.sans.provider.mongo.ReportRepository;
+import com.sans.provider.mybatis.mapper.UserMapper;
 import org.apache.dubbo.config.annotation.DubboService;
-import org.apache.dubbo.config.annotation.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -11,8 +12,8 @@ import org.springframework.jdbc.core.RowMapper;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -21,50 +22,65 @@ import java.util.concurrent.TimeUnit;
 //@Service
 @DubboService
 public class UserServiceImpl implements IUserService {
+
     @Autowired
     private JdbcTemplate jdbcTemplate ;
+
     @Autowired
     private RedisTemplate redisTemplate ;
 
+    private  final UserMapper userMapper ;
+     @Autowired
+     private ReportRepository reportRegistry ;
+
+
+
+    public UserServiceImpl(UserMapper userMapper) {
+        this.userMapper = userMapper;
+    }
+
     @Override
-    public List<ProviderTestDTO> queryList() {
-        // 初始化数据
-//        ProviderTestDTO testDTO1 = new ProviderTestDTO();
-//        testDTO1.setId(1);
-//        testDTO1.setName("学生");
-//        testDTO1.setNumber(100);
-//        ProviderTestDTO testDTO2 = new ProviderTestDTO();
-//        testDTO2.setId(2);
-//        testDTO2.setName("教师");
-//        testDTO2.setNumber(101);
-//        // 组装数据
-//        List<ProviderTestDTO> list = new ArrayList<>();
-//        list.add(testDTO1);
-//        list.add(testDTO2);
+    public List<User> queryList() {
 
-        List<ProviderTestDTO> providerTestDTOList = (List<ProviderTestDTO>) redisTemplate.opsForValue().get("allUsers");
+        List<User>  userList = (List<User>) redisTemplate.opsForValue().get("allUsers");
 
-        if(null == providerTestDTOList){
-            providerTestDTOList = mySqlTest();
-            redisTemplate.opsForValue().set("allUsers",providerTestDTOList,5, TimeUnit.SECONDS);
+        if(null == userList){
+            userList = mySqlTest();
+            redisTemplate.opsForValue().set("allUsers",userList,5, TimeUnit.SECONDS);
             System.out.println("查询数据库，将数据存入redis缓存");
         }else{
             System.out.println("查询Redis缓存");
         }
 
-        return providerTestDTOList;
+        return userList;
     }
 
-    public List<ProviderTestDTO>  mySqlTest() {
+    @Override
+    public User queryByID(String id) {
+        return userMapper.findByState(id);
+    }
+
+
+    /**
+     * 保存数到mongo
+     * @param user
+     */
+    @Override
+    public void savaUserInfoToMongo(User user) {
+        reportRegistry.save(user);
+    }
+
+
+    public List<User>  mySqlTest() {
         String sql = "select id,name ,number  from user";
-        List<ProviderTestDTO> students = jdbcTemplate.query(sql, new RowMapper<ProviderTestDTO>() {
+        List<User> students = jdbcTemplate.query(sql, new RowMapper<User>() {
             @Override
-            public ProviderTestDTO mapRow(ResultSet resultSet, int i) throws SQLException {
-                ProviderTestDTO providerTestDTO = new ProviderTestDTO();
-                providerTestDTO.setId(resultSet.getInt("id"));
-                providerTestDTO.setName(resultSet.getString("name"));
-                providerTestDTO.setNumber(resultSet.getInt("number"));
-                return providerTestDTO;
+            public User mapRow(ResultSet resultSet, int i) throws SQLException {
+                User user = new User();
+                user.setId(resultSet.getInt("id"));
+                user.setName(resultSet.getString("name"));
+                user.setNumber(resultSet.getInt("number"));
+                return user;
             }
         });
 
